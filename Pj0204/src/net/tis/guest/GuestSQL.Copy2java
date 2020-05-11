@@ -1,0 +1,130 @@
+package net.tis.guest;
+
+import net.tis.common.DB;
+import net.tis.common.Global;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+
+public class GuestSQL extends Global{
+
+	public GuestSQL() {
+		try {
+		CN = DB.getConnection();  //Global의 CN을 가져온 것이지 DB에서는 지역변수로 설정을 했기때문에 사용할 수 없다
+		if(CN==null)
+		System.out.println("GuestSQL 기본생성자 db연결성공 200121");
+		}catch(Exception e) {
+		System.out.println("GuestSQL 기본생성자 db연결실패 200121");
+		}
+	}
+	
+	public void guestInsert(int asabun, String ename, String ctitle, int pay, String email) {
+		try {
+			//msg="insert into guest values("+asabun+",'"+ename+"','"+ctitle+"',sysdate,"+pay+",0,'"+email+"')";
+			msg="insert into guest values(?, ?, ?, sysdate, ?, 0, ? )";
+			System.out.println(msg);   //콘솔창에 insert쿼리문 출력
+			
+			PST=CN.prepareStatement(msg);
+			  PST.setInt(1, asabun);  //msg의 1번째 ?에 asabun의 값을 입력한다는 뜻
+			  PST.setString(2, ename);
+			  PST.setString(3, ctitle);
+			  PST.setInt(4,pay);
+			  PST.setString(5, email);
+			  PST.executeUpdate();
+			
+			//ST=CN.createStatement();   //명령어 생성
+			//int ok = ST.executeUpdate(msg);  //저장처리
+			  
+			int ok = PST.executeUpdate(); //PST는 ST와 반대로 저장할때는 값을 넣어주지 않는다(괄호안에 msg를 쓰지 않음) 대신 PST를 정의할때(불러올때) 괄호안에 msg를 써준다
+			if(ok>0) {System.out.println("guest테이블 저장 성공");}
+		   }catch(Exception ex){
+		}
+	}
+	
+	public void guestInsert(GuestDTO dto) {
+		try {
+			msg="insert into guest values(?, ?, ?, sysdate, ?, 0, ? )";
+			System.out.println(msg);
+			PST=CN.prepareStatement(msg);
+			  PST.setInt(1, dto.getSabun());
+			  PST.setString(2, dto.getName());
+			  PST.setString(3, dto.getTitle());
+			  PST.setInt(4, dto.getPay());
+			  PST.setString(5, dto.getEmail());
+			  
+		int ok = PST.executeUpdate();
+		if(ok>0) {System.out.println("guest테이블 DTO이용 저장 성공");}
+		}catch(Exception ex){		
+	  }
+	}
+	
+	
+	public ArrayList<GuestDTO> guestSelect() {		//guestList0130.jsp 문서에서 출력하기
+		ArrayList<GuestDTO> list = new ArrayList<GuestDTO>();
+		try {
+			String a=" select * from(";
+			String b=" select rownum rn, sabun, name, title, wdate, pay,hit,email from guest";
+			String c=" )";
+			msg=a+b+c;
+			//msg="select rownum,sabun,name,title,wdate,pay,hit form guest";
+			ST=CN.createStatement();
+			RS=ST.executeQuery(msg);
+			while(RS.next()==true) {
+				GuestDTO dto = new GuestDTO();
+				dto.setRn(RS.getInt("rn"));			
+				dto.setSabun(RS.getInt("sabun"));
+				dto.setName(RS.getString("name"));
+				dto.setTitle(RS.getString("title"));
+				dto.setWdate(RS.getDate("wdate"));
+				dto.setEmail(RS.getString("email"));
+				dto.setPay(RS.getInt("pay"));
+				dto.setHit(RS.getInt("hit"));
+				
+				list.add(dto);
+			
+				System.out.println();
+			}
+		} catch (Exception e) { }
+		return list;
+	}
+	
+	public int guestGtotal() {
+	  int count=0;	
+		try {
+			msg="select count(*) as cnt from guest";
+			ST=CN.createStatement();
+			RS=ST.executeQuery(msg);
+			if(RS.next()==true) {
+			count=RS.getInt("cnt"); }
+		}catch(Exception ex) { }
+	 return count; 
+	}//
+	
+	public void dbInsert() {  
+		try {
+			
+		}catch(Exception e) {System.out.println(e);}	
+	}
+	
+	public int guestDelete(String my) {
+		int ok = 0;
+		try {	
+			msg="delete from guest where sabun=?";
+			PST=CN.prepareStatement(msg);
+			PST.setString(1, my);
+			ok = PST.executeUpdate();
+			if(ok>0) {
+				System.out.println("데이터삭제 성공 200129");
+			}
+			
+			/*
+			 * msg="delete from guest where sabun = " + my; 
+			 * ST=CN.createStatement(); ok =
+			 * ST.executeUpdate(msg); 
+			 * System.out.println(my+" 데이터 삭제 성공");
+			 */
+	     }catch(Exception e) {System.out.println(e);}	
+		 return ok;
+	}
+}//GuestSQL class END
