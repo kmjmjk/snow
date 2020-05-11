@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+   <Resource name="jdbc/snow"
+			auth="Container"
+			type="javax.sql.DataSource"
+			username="system"
+			password="1234"
+			driverClassName="oracle.jdbc.OracleDriver"
+			url="jdbc:oracle:thin:@127.0.0.1:1521:XE"
+			maxActive="500"
+			maxIdle="100" />
+</Context>
